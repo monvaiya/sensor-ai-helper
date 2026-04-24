@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>传感器仿真AI纠错助手</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header>
+            <h1><i class="fas fa-microchip"></i> 传感器仿真AI纠错助手</h1>
+            <p class="subtitle">高职《传感器检测技术》实验教学辅助平台</p>
+        </header>
+
+        <!-- 模块一：操作前预警 -->
+        <section class="module card" id="module1">
+            <div class="module-header">
+                <span class="module-number">1</span>
+                <h2><i class="fas fa-shield-alt"></i> 操作前预警（预检）</h2>
+            </div>
+            <p class="module-desc">上传仿真接线图，AI提前检查常见错误，防患于未然。</p>
+            
+            <div class="upload-area" id="precheckUploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>点击或拖拽上传仿真截图</p>
+                <input type="file" id="precheckImage" accept="image/*" hidden>
+                <button class="btn-select" onclick="document.getElementById('precheckImage').click()">选择图片</button>
+            </div>
+            
+            <div class="image-preview" id="precheckPreview"></div>
+            
+            <div class="action-row">
+                <button class="btn-analyze" onclick="analyze('precheck')">
+                    <i class="fas fa-search"></i> AI预检接线
+                </button>
+            </div>
+            
+            <div class="result-box" id="precheckResult">
+                <div class="result-placeholder">
+                    <i class="fas fa-comment-dots"></i>
+                    <p>AI预检结果将显示在这里</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 模块二：故障诊断 -->
+        <section class="module card" id="module2">
+            <div class="module-header">
+                <span class="module-number">2</span>
+                <h2><i class="fas fa-bug"></i> 故障现象诊断</h2>
+            </div>
+            <p class="module-desc">仿真出错或结果异常？上传截图，AI帮你定位问题根源。</p>
+            
+            <div class="input-group">
+                <label for="studentName"><i class="fas fa-user"></i> 学生姓名</label>
+                <input type="text" id="studentName" placeholder="请输入姓名">
+            </div>
+            
+            <div class="input-group">
+                <label for="experimentType"><i class="fas fa-flask"></i> 实验项目</label>
+                <select id="experimentType">
+                    <option value="">请选择实验项目</option>
+                    <option value="bridge">电桥测温电路</option>
+                    <option value="thermistor">热敏电阻标定</option>
+                    <option value="hall">霍尔测速实验</option>
+                    <option value="photoelectric">光电报警电路</option>
+                    <option value="strain">应变片测量</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="problemDesc"><i class="fas fa-question-circle"></i> 问题描述</label>
+                <textarea id="problemDesc" rows="3" placeholder="请描述你遇到的问题，例如：电路无输出、波形异常、仿真报错等..."></textarea>
+            </div>
+            
+            <div class="upload-area" id="faultUploadArea">
+                <i class="fas fa-camera"></i>
+                <p>上传故障截图（仿真报错/异常波形）</p>
+                <input type="file" id="faultImage" accept="image/*" hidden>
+                <button class="btn-select" onclick="document.getElementById('faultImage').click()">选择图片</button>
+            </div>
+            
+            <div class="image-preview" id="faultPreview"></div>
+            
+            <div class="action-row">
+                <button class="btn-analyze" onclick="analyze('fault')">
+                    <i class="fas fa-stethoscope"></i> AI诊断故障
+                </button>
+            </div>
+            
+            <div class="result-box" id="faultResult">
+                <div class="result-placeholder">
+                    <i class="fas fa-comment-medical"></i>
+                    <p>AI诊断结果将显示在这里</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 模块三：实验报告 -->
+        <section class="module card" id="module3">
+            <div class="module-header">
+                <span class="module-number">3</span>
+                <h2><i class="fas fa-file-pdf"></i> 实验报告生成</h2>
+            </div>
+            <p class="module-desc">一键生成包含错误分析和修正建议的个性化实验报告。</p>
+            
+            <div class="action-row">
+                <button class="btn-report" onclick="generateReport()">
+                    <i class="fas fa-file-download"></i> 生成PDF实验报告
+                </button>
+                <button class="btn-history" onclick="viewHistory()">
+                    <i class="fas fa-history"></i> 查看历史记录
+                </button>
+            </div>
+            
+            <div class="report-preview" id="reportPreview">
+                <p>报告预览区</p>
+            </div>
+            
+            <a id="downloadLink" style="display:none;" class="btn-download">
+                <i class="fas fa-download"></i> 下载实验报告
+            </a>
+        </section>
+
+        <!-- 教师入口 -->
+        <div class="teacher-section">
+            <div class="teacher-card">
+                <h3><i class="fas fa-chalkboard-teacher"></i> 教师专区</h3>
+                <p>查看全班学情分析，获取教学决策支持</p>
+                <a href="teacher.html" target="_blank" class="btn-teacher">
+                    <i class="fas fa-chart-bar"></i> 进入学情看板
+                </a>
+                <p class="teacher-note">（需输入教师密码）</p>
+            </div>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="instructions card">
+            <h3><i class="fas fa-info-circle"></i> 使用说明</h3>
+            <ol>
+                <li><strong>第一步（预检）</strong>：搭建电路后，先拍照让AI检查常见接线错误。</li>
+                <li><strong>第二步（诊断）</strong>：仿真出错时，上传错误截图获取详细分析。</li>
+                <li><strong>第三步（报告）</strong>：诊断后可生成包含AI建议的正式实验报告。</li>
+                <li><strong>教师功能</strong>：点击上方按钮进入学情看板，查看全班学习情况。</li>
+            </ol>
+            <p class="tip"><i class="fas fa-lightbulb"></i> 提示：所有数据仅用于教学改进，不会对外公开。</p>
+        </div>
+
+        <footer>
+            <p>高职《传感器检测技术》AI辅助教学系统 | 技术支持：DeepSeek API + Gitee Pages</p>
+            <p class="version">版本 1.0 | 2026年4月</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -2,460 +2,151 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>传感器仿真AI纠错助手</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
+            font-family: sans-serif;
             padding: 20px;
+            background-color: #f4f4f4;
         }
         .container {
-            max-width: 100%;
+            max-width: 600px;
             margin: 0 auto;
-        }
-        .header {
-            text-align: center;
-            color: white;
-            padding: 20px 0 30px;
-        }
-        .header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        .header p {
-            opacity: 0.9;
-            font-size: 1rem;
-        }
-        .card {
             background: white;
-            border-radius: 20px;
-            padding: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { text-align: center; color: #333; }
+        .section {
+            border: 1px solid #ddd;
+            padding: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: 5px;
         }
-        .card-title {
-            font-size: 1.3rem;
-            color: #2c3e50;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .card-title i { color: #3498db; }
-        .upload-area {
-            border: 3px dashed #bdc3c7;
-            border-radius: 15px;
-            padding: 40px 20px;
-            text-align: center;
-            margin: 20px 0;
-            background: #f8f9fa;
-            transition: all 0.3s;
-        }
-        .upload-area.active {
-            border-color: #3498db;
-            background: #e8f4fc;
-        }
-        .upload-area i {
-            font-size: 3.5rem;
-            color: #7f8c8d;
-            margin-bottom: 15px;
-        }
-        .upload-btn {
-            display: inline-block;
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin: 10px 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-        }
-        .upload-btn:hover { background: #2980b9; transform: translateY(-2px); }
-        .upload-btn.camera { background: #2ecc71; }
-        .upload-btn.camera:hover { background: #27ae60; }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        .input-group input, .input-group select, .input-group textarea {
+        button, input, select, textarea {
+            margin: 5px 0;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
             width: 100%;
-            padding: 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: border 0.3s;
+            box-sizing: border-box;
         }
-        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
-            outline: none;
-            border-color: #3498db;
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
         }
-        .preview-container {
-            display: none;
-            margin: 20px 0;
-            text-align: center;
+        button:hover {
+            background-color: #0056b3;
         }
-        .preview-img {
+        #preview {
             max-width: 100%;
-            max-height: 300px;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-        .action-btn {
-            display: block;
-            width: 100%;
-            background: linear-gradient(135deg, #9b59b6, #8e44ad);
-            color: white;
-            border: none;
-            padding: 18px;
-            border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 25px 0 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .action-btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(155, 89, 182, 0.4); }
-        .result-box {
-            display: none;
-            background: #e8f4fc;
-            border-left: 5px solid #3498db;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            line-height: 1.6;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
+            height: auto;
+            margin-top: 10px;
+            border: 1px dashed #ccc;
             display: none;
         }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .footer {
-            text-align: center;
-            color: rgba(255,255,255,0.8);
-            margin-top: 30px;
-            padding: 20px;
-            font-size: 0.9rem;
-        }
-        @media (max-width: 768px) {
-            .header h1 { font-size: 1.5rem; }
-            .card { padding: 20px; }
-            .upload-btn { padding: 12px 24px; font-size: 1rem; }
+        #result {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            min-height: 50px;
+            white-space: pre-wrap; /* 保留换行 */
         }
     </style>
-    <!-- 引入 Font Awesome 图标 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-microchip"></i> 传感器仿真AI纠错助手</h1>
-            <p>高职《传感器检测技术》实验教学辅助平台</p>
-        </div>
 
-        <!-- 学生信息 -->
-        <div class="card">
-            <div class="input-group">
-                <label><i class="fas fa-user"></i> 学生姓名</label>
-                <input type="text" id="studentName" placeholder="请输入姓名" required>
-            </div>
-            <div class="input-group">
-                <label><i class="fas fa-flask"></i> 实验项目</label>
-                <select id="experimentType">
-                    <option value="">请选择实验项目</option>
-                    <option value="thermistor">热敏电阻标定实验</option>
-                    <option value="bridge">电桥测温电路仿真</option>
-                    <option value="strain">应变片测量实验</option>
-                    <option value="photoelectric">光电传感器应用</option>
-                </select>
-            </div>
-        </div>
+<div class="container">
+    <h1>传感器仿真AI纠错助手</h1>
 
-        <!-- 图片上传区域 -->
-        <div class="card">
-            <h2 class="card-title"><i class="fas fa-camera"></i> 拍照上传仿真截图</h2>
-            <p style="margin-bottom: 20px; color: #666; line-height: 1.5;">
-                请上传传感器仿真实验的截图，可以是接线图、错误提示或异常波形。<br>
-                AI将分析图片并提供针对性纠错建议。
-            </p>
-            
-            <div class="upload-area" id="uploadArea">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <p style="margin: 15px 0; color: #666; font-size: 1.1rem;">
-                    点击下方按钮拍照或从相册选择
-                </p>
-                <input type="file" id="fileInput" accept="image/*" capture="environment" hidden>
-                <button class="upload-btn camera" onclick="openCamera()">
-                    <i class="fas fa-camera"></i> 使用相机拍照
-                </button>
-                <button class="upload-btn" onclick="openGallery()">
-                    <i class="fas fa-image"></i> 从相册选择
-                </button>
-            </div>
+    <!-- 第一部分：操作前预警 -->
+    <div class="section">
+        <h2>1. 操作前预警（预检）</h2>
+        上传仿真接线图，AI提前检查常见错误，防患于未然。
+        
+        <!-- 隐藏的文件输入框 -->
+        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        
+        <!-- 触发文件选择的按钮 -->
+        <button onclick="document.getElementById('fileInput').click()">选择图片 / 手机拍照</button>
+        
+        <!-- 预览图 -->
+        <img id="preview" alt="预览">
+        
+       图 <!-- 分析按钮 -->
+        <button onclick="analyzeImage()">AI预检接线</button>
 
-            <div class="preview-container" id="previewContainer">
-                <img class="preview-img" id="previewImg" alt="图片预览">
-                <div style="margin-top: 15px;">
-                    <button class="upload-btn" onclick="clearImage()" style="background: #e74c3c;">
-                        <i class="fas fa-trash"></i> 删除图片
-                    </button>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label><i class="fas fa-question-circle"></i> 问题描述（可选）</label>
-                <textarea id="problemDesc" rows="3" placeholder="请描述遇到的问题，如：仿真报错、电路无输出、波形异常等..."></textarea>
-            </div>
-
-            <button class="action-btn" onclick="analyzeImage()">
-                <i class="fas fa-robot"></i> AI智能分析纠错
-            </button>
-
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>AI正在分析图片，请稍候...</p>
-            </div>
-
-            <div class="result-box" id="resultBox">
-                <!-- AI分析结果将显示在这里 -->
-            </div>
-        </div>
-
-        <!-- 使用说明 -->
-        <div class="card">
-            <h2 class="card-title"><i class="fas fa-info-circle"></i> 使用说明</h2>
-            <ol style="padding-left: 20px; line-height: 1.8; color: #555;">
-                <li>填写学生姓名和选择实验项目</li>
-                <li>点击"使用相机拍照"直接拍摄仿真截图，或点击"从相册选择"上传已有图片</li>
-                <li>可在问题描述中补充详细信息（可选）</li>
-                <li>点击"AI智能分析纠错"按钮，等待分析结果</li>
-                <li>根据AI建议修正实验错误，重新验证</li>
-            </ol>
-        </div>
-
-        <div class="footer">
-            <p>传感器仿真AI纠错助手 v1.0 | 技术支持：DeepSeek API + GitHub Pages</p>
-            <p style="margin-top: 5px; font-size: 0.85rem;">适配移动端 | 支持拍照上传 | 实时AI分析</p>
+        <!-- 结果显示区 -->
+        <div id="result">
+            AI预检结果将显示在这里
         </div>
     </div>
 
-    <script>
-        // 当前选中的图片文件
-        let currentImageFile = null;
+    <!-- 第二部分：故障现象诊断 (保持原样) -->
+    <div class="section">
+        <h2>2. 故障现象诊断</h2>
+        学生姓名：<input type="text" placeholder="请输入姓名">
+        实验项目：<select><option>请选择实验项目</option></select>
+        问题描述：<textarea rows="3" placeholder="请描述你遇到的问题..."></textarea>
+        
+        上传故障截图：<input type="file" accept="image/*">
+        <button>AI诊断故障</button>
+        
+        AI诊断结果将显示在这里
+    </div>
+</div>
 
-        // 打开相机拍照
-        function openCamera() {
-            // 设置允许使用相机
-            const fileInput = document.getElementById('fileInput');
-            fileInput.setAttribute('capture', 'environment'); // 后置摄像头
-            fileInput.click();
-        }
-
-        // 从相册选择
-        function openGallery() {
-            const fileInput = document.getElementById('fileInput');
-            fileInput.removeAttribute('capture'); // 移除capture属性，允许选择相册
-            fileInput.click();
-        }
-
-        // 监听文件选择变化
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                if (!file.type.match('image.*')) {
-                    alert('请选择图片文件！');
-                    return;
-                }
-                
-                // 验证文件大小（限制5MB）
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('图片大小不能超过5MB！');
-                    return;
-                }
-                
-                currentImageFile = file;
-                showPreview(file);
-            }
-        });
-
-        // 显示图片预览
-        function showPreview(file) {
+<script>
+    // 监听文件选择变化
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const previewImg = document.getElementById('previewImg');
-                const previewContainer = document.getElementById('previewContainer');
-                const uploadArea = document.getElementById('uploadArea');
+                const preview = document.getElementById('preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
                 
-                previewImg.src = e.target.result;
-                previewContainer.style.display = 'block';
-                uploadArea.classList.add('active');
+                // 清空之前的结果
+                document.getElementById('result').innerText = "图片已加载，点击下方按钮开始分析...";
             };
             reader.readAsDataURL(file);
         }
+    });
 
-        // 清除图片
-        function clearImage() {
-            currentImageFile = null;
-            document.getElementById('fileInput').value = '';
-            document.getElementById('previewContainer').style.display = 'none';
-            document.getElementById('uploadArea').classList.remove('active');
+    // 模拟 AI 分析函数
+    function analyzeImage() {
+        const resultDiv = document.getElementById('result');
+        const preview = document.getElementById('preview');
+        
+        if (!preview.src || preview.style.display === 'none') {
+            resultDiv.innerText = "❌ 请先上传一张图片！";
+            return;
         }
 
-        // 分析图片
-        async function analyzeImage() {
-            const studentName = document.getElementById('studentName').value.trim();
-            const experimentType = document.getElementById('experimentType').value;
+        // --- 这里是模拟 AI 分析的“假逻辑” ---
+        // 在实际项目中，这里会发送图片到服务器/AI接口
+        
+        resultDiv.innerHTML = "<strong>🔍 AI 分析中...</strong>\n"; // \n 会被 CSS 保留为换行
+        
+        setTimeout(() => {
+            // 模拟不同的分析结果（随机或固定）
+            const mockResults = [
+                "✅ 初步检查：电源线连接正确。\n⚠️ 警告：发现传感器信号线颜色接错（红黑反接），可能导致读数异常。\n💡 建议：检查传感器引脚定义，重新连接信号线。",
+                "✅ 初步检查：整体接线布局良好。\n⚠️ 警告：电源负极未接地，仿真会报错。\n💡 建议：将 GND 连接到公共地。",
+                "❌ 严重错误：传感器激励电压过高，已超出额定范围。\n💡 建议：将电压调低至 5V 以下。"
+            ];
             
-            // 验证输入
-            if (!studentName) {
-                alert('请输入学生姓名！');
-                return;
-            }
-            
-            if (!experimentType) {
-                alert('请选择实验项目！');
-                return;
-            }
-            
-            if (!currentImageFile) {
-                alert('请先拍照或选择图片！');
-                return;
-            }
-            
-            // 显示加载动画
-            const loading = document.getElementById('loading');
-            const resultBox = document.getElementById('resultBox');
-            loading.style.display = 'block';
-            resultBox.style.display = 'none';
-            
-            // 模拟AI分析延迟
-            setTimeout(() => {
-                // 模拟AI分析结果
-                const mockResults = {
-                    'thermistor': {
-                        title: '热敏电阻标定实验分析',
-                        issues: ['检测到电阻值计算误差', '温度校准点设置不合理'],
-                        suggestions: ['重新校准零点温度', '增加采样点密度']
-                    },
-                    'bridge': {
-                        title: '电桥测温电路分析',
-                        issues: ['电桥不平衡，输出电压异常', '激励电压设置偏高'],
-                        suggestions: ['检查R3、R4电阻匹配', '将激励电压降至5V']
-                    },
-                    'strain': {
-                        title: '应变片测量实验分析',
-                        issues: ['检测到温度漂移现象', '放大倍数设置不当'],
-                        suggestions: ['增加温度补偿电路', '调整放大倍数至100倍']
-                    },
-                    'photoelectric': {
-                        title: '光电传感器应用分析',
-                        issues: ['检测到环境光干扰', '响应时间设置过短'],
-                        suggestions: ['增加遮光罩', '将响应时间调整至10ms']
-                    }
-                };
-                
-                const result = mockResults[experimentType] || {
-                    title: '通用仿真实验分析',
-                    issues: ['检测到电路连接问题', '参数设置需要优化'],
-                    suggestions: ['检查关键节点连接', '参考标准参数重新配置']
-                };
-                
-                // 隐藏加载动画
-                loading.style.display = 'none';
-                
-                // 显示结果
-                resultBox.innerHTML = `
-                    <h3><i class="fas fa-check-circle" style="color: #27ae60;"></i> ${result.title}</h3>
-                    <p><strong>学生：</strong>${studentName}</p>
-                    <p><strong>分析时间：</strong>${new Date().toLocaleTimeString()}</p>
-                    <hr style="margin: 15px 0; border-color: #ddd;">
-                    <h4><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> 发现问题：</h4>
-                    <ul style="padding-left: 20px; margin: 10px 0;">
-                        ${result.issues.map(issue => `<li>${issue}</li>`).join('')}
-                    </ul>
-                    <h4><i class="fas fa-lightbulb" style="color: #f39c12;"></i> 改进建议：</h4>
-                    <ul style="padding-left: 20px; margin: 10px 0;">
-                        ${result.suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
-                    </ul>
-                    <p style="margin-top: 15px; font-style: italic; color: #666;">
-                        <i class="fas fa-info-circle"></i> 以上为AI初步分析，请根据实际情况调整。
-                    </p>
-                `;
-                resultBox.style.display = 'block';
-                
-            }, 1500); // 模拟1.5秒分析时间
-        }
+            const randomResult = mockResults[Math.floor(Math.random() * mockResults.length)];
+            resultDiv.innerText = randomResult;
+        }, 1500); // 延迟1.5秒，模拟网络请求
+    }
+</script>
 
-        // 页面加载时的事件绑定
-        document.addEventListener('DOMContentLoaded', function() {
-            // 添加上传区域的拖放支持
-            const uploadArea = document.getElementById('uploadArea');
-            
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.classList.add('active');
-            });
-            
-            uploadArea.addEventListener('dragleave', function() {
-                this.classList.remove('active');
-            });
-            
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.classList.remove('active');
-                
-                if (e.dataTransfer.files.length) {
-                    const file = e.dataTransfer.files[0];
-                    if (file.type.match('image.*')) {
-                        currentImageFile = file;
-                        showPreview(file);
-                    } else {
-                        alert('请拖放图片文件！');
-                    }
-                }
-            });
-            
-            // 移动端触摸反馈
-            uploadArea.addEventListener('touchstart', function() {
-                this.classList.add('active');
-            });
-            
-            uploadArea.addEventListener('touchend', function() {
-                setTimeout(() => this.classList.remove('active'), 200);
-            });
-        });
-
-        // 防止表单意外提交
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
-                e.preventDefault();
-            }
-        });
-    </script>
 </body>
 </html>
